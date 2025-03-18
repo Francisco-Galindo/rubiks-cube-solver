@@ -39,6 +39,7 @@ const (
 	D
 	L
 	B
+	InvalidMove
 )
 
 type Corn uint8
@@ -52,6 +53,7 @@ const (
 	DLF
 	DBL
 	DRB
+	InvalidCorn
 )
 
 type CornerCubie struct {
@@ -59,7 +61,7 @@ type CornerCubie struct {
 	o uint8
 }
 
-var cornerCubieMoves = [6][8]CornerCubie{
+var cornerCubieMoves = [7][8]CornerCubie{
 	{
 		{c: UBR, o: 0},
 		{c: URF, o: 0},
@@ -120,6 +122,16 @@ var cornerCubieMoves = [6][8]CornerCubie{
 		{c: ULB, o: 2},
 		{c: DBL, o: 1},
 	},
+	{
+		{c: URF, o: 0},
+		{c: UFL, o: 0},
+		{c: ULB, o: 0},
+		{c: UBR, o: 0},
+		{c: DFR, o: 0},
+		{c: DLF, o: 0},
+		{c: DBL, o: 0},
+		{c: DRB, o: 0},
+	},
 }
 
 type Edge uint8
@@ -137,6 +149,7 @@ const (
 	FL
 	BL
 	BR
+	InvalidEdge
 )
 
 type EdgeCubie struct {
@@ -144,7 +157,7 @@ type EdgeCubie struct {
 	o uint8
 }
 
-var edgeCubieMoves = [6][12]EdgeCubie{
+var edgeCubieMoves = [7][12]EdgeCubie{
 	{{e: UB, o: 0}, {e: UR, o: 0}, {e: UF, o: 0}, {e: UL, o: 0}, {e: DR, o: 0}, {e: DF, o: 0}, //U
 		{e: DL, o: 0}, {e: DB, o: 0}, {e: FR, o: 0}, {e: FL, o: 0}, {e: BL, o: 0}, {e: BR, o: 0}},
 	{{e: FR, o: 0}, {e: UF, o: 0}, {e: UL, o: 0}, {e: UB, o: 0}, {e: BR, o: 0}, {e: DF, o: 0}, //R
@@ -157,6 +170,8 @@ var edgeCubieMoves = [6][12]EdgeCubie{
 		{e: FL, o: 0}, {e: DB, o: 0}, {e: FR, o: 0}, {e: UL, o: 0}, {e: DL, o: 0}, {e: BR, o: 0}},
 	{{e: UR, o: 0}, {e: UF, o: 0}, {e: UL, o: 0}, {e: BR, o: 1}, {e: DR, o: 0}, {e: DF, o: 0}, //B
 		{e: DL, o: 0}, {e: BL, o: 1}, {e: FR, o: 0}, {e: FL, o: 0}, {e: UB, o: 1}, {e: DB, o: 1}},
+	{{e: UR, o: 0}, {e: UF, o: 0}, {e: UL, o: 0}, {e: UB, o: 0}, {e: DR, o: 0}, {e: DF, o: 0}, //TROLl
+		{e: DL, o: 0}, {e: DB, o: 0}, {e: FR, o: 0}, {e: FL, o: 0}, {e: BL, o: 0}, {e: BR, o: 0}},
 }
 
 type Perm struct {
@@ -297,6 +312,18 @@ func indexEdgeCord(p Perm) int {
 	return t
 }
 
+func generatePruningList() map[uint16]uint8 {
+	var count uint16 = 0
+	// var p Perm = Perm{corns: cornerCubieMoves[InvalidMove], edges: edgeCubieMoves[InvalidMove]}
+
+
+	for count < 2186 {
+
+		count++
+	}
+	return make(map[uint16]uint8)
+}
+
 func kociemba(p Perm) {
 	for d := range 128 {
 		res := phase1search(p, uint64(d+1), Invalid)
@@ -375,14 +402,19 @@ func main() {
 	// // R U R' U'
 	//
 	p = makeFullMove(p, Rx1)
-	p = makeFullMove(p, Ux1)
-	p = makeFullMove(p, Rx3)
-	p = makeFullMove(p, Ux3)
-
 	p = makeFullMove(p, Rx1)
-	p = makeFullMove(p, Ux1)
+	p = makeFullMove(p, Rx1)
+	fmt.Println(p.corns, p.edges)
+
+	// p = makeFullMove(p, Rx1)
+	// p = makeFullMove(p, Ux1)
 	// p = makeFullMove(p, Rx3)
 	// p = makeFullMove(p, Ux3)
 
-	kociemba(p)
+	// p = makeFullMove(p, Rx1)
+	// p = makeFullMove(p, Ux1)
+	// p = makeFullMove(p, Rx3)
+	// p = makeFullMove(p, Ux3)
+
+	// kociemba(p)
 }
