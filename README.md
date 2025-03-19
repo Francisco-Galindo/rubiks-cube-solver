@@ -1,10 +1,22 @@
-# rubiks-cube-solver
-A solver for Rubik's Cube, using A*, written in Go
+---
+titlepage: true
+title: "Report 02"
+subtitle: "Rubik's Cube"
+author: [Francisco Galindo Mena, Rodrigo García Peñafort, Andrea Saldaña Navarrete, Gustavo Santana Sánchez]
+date: "March, 2025"
+toc: true
+lang: "en"
+listings-disable-line-numbers: true
+bibliography: "fuentes.bib"
+nocite: |
+  @*
+...
 
 # Abstract
-This paper explores the implementation of Kociemba's Algorithm for solving the Rubik's Cube efficiently, 
-leveraging a *is replaced by* representation. The two-phase approach of Kociemba's method significantly reduces 
-the search space, allowing for near-optimal solutions in under 20 moves.
+This paper explores the implementation of Kociemba's Algorithm for solving the Rubik's Cube efficiently,
+leveraging a cubie-level representation. The two-phase approach of Kociemba's method significantly reduces
+the search space, allowing for near-optimal solutions in under 20 moves. We discuss the advantages
+of the cubie-level representation in terms of computational efficiency, memory usage, and move application.
 
 # Goals
 * Implement an optimized Rubik's Cube solver using Kociemba’s Algorithm.
@@ -12,12 +24,13 @@ the search space, allowing for near-optimal solutions in under 20 moves.
 * Analyze the effectiveness of heuristic-based search methods, such as IDA*.
 
 # Introduction
-The Rubik's Cube is a well-known combinatorial puzzle with over 43 quintillion possible states. Efficiently 
-solving the cube has been a long-standing challenge in algorithmic problem-solving. While brute-force approaches are 
-infeasible, heuristic-based methods such as Kociemba's Algorithm provide an effective way to find near-optimal 
-solutions. The core idea of Kociemba's method is to break the problem into two phases: first reducing the cube 
-to a predefined subgroup (G1), and then solving it completely in an optimized manner. This method greatly reduces 
+The Rubik's Cube is a well-known combinatorial puzzle with over 43 quintillion possible states. Efficiently
+solving the cube has been a long-standing challenge in algorithmic problem-solving. While brute-force approaches are
+infeasible, heuristic-based methods such as Kociemba's Algorithm provide an effective way to find near-optimal
+solutions. The core idea of Kociemba's method is to break the problem into two phases: first reducing the cube
+to a predefined subgroup (G1), and then solving it completely in an optimized manner. This method greatly reduces
 computational complexity and allows solutions close to the theoretical lower bound of 20 moves (God's Number).
+
 
 # Development
 ## Rubik's Cube Representation
@@ -29,17 +42,18 @@ the second list stores the edges and their orientation. Each move is a permutati
 representation enables efficient  move application and state transitions, making it ideal for fast 
 search algorithms like IDA*.
 
+
 ## Kociemba's Algorithm Implementation
 ### Phase 1: Reducing the Cube to Subgroup G1
-The first phase aims to transform the cube into a specific subset of states known as the G1 group. 
+The first phase aims to transform the cube into a specific subset of states known as the G1 group.
 This means ensuring that:
 - All edge pieces are oriented correctly.
 - The cube reaches a reduced subset where only a subset of allowed moves is required for solving.
 - This phase utilizes precomputed lookup tables to guide moves efficiently, reducing the number of steps needed to reach G1.
 
 ### Phase 2: Solving from G1 to the Solved State
-Once the cube is in the G1 group, a second search is performed to find the shortest solution to reach the solved state. 
-This step benefits from additional heuristics and pruning techniques, ensuring that an optimal or near-optimal 
+Once the cube is in the G1 group, a second search is performed to find the shortest solution to reach the solved state.
+This step benefits from additional heuristics and pruning techniques, ensuring that an optimal or near-optimal
 solution is found quickly.
 
 ## Search Strategy and Optimization
@@ -68,7 +82,3 @@ combination of a well-structured problem representation and advanced search stra
 problems with large search spaces.
 
 # Bibliography
-
-
-
-
