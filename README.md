@@ -20,7 +20,6 @@ of the cubie-level representation in terms of computational efficiency, memory u
 
 # Goals
 * Implement an optimized Rubik's Cube solver using Kociemba’s Algorithm.
-* Utilize a cubie-level representation to optimize state transitions.
 * Improve computational efficiency compared to standard facelet-based representations.
 * Analyze the effectiveness of heuristic-based search methods, such as IDA*.
 
@@ -32,20 +31,17 @@ solutions. The core idea of Kociemba's method is to break the problem into two p
 to a predefined subgroup (G1), and then solving it completely in an optimized manner. This method greatly reduces
 computational complexity and allows solutions close to the theoretical lower bound of 20 moves (God's Number).
 
-A key aspect of our implementation is the cubie-level representation, which encodes the cube's state in terms
-of piece positions and orientations rather than individual face colors. This representation enables efficient
-move applications and state transitions, making it ideal for fast search algorithms like IDA*.
 
 # Development
 ## Rubik's Cube Representation
-The first challenge was representing the Rubik's Cube. Traditional Rubik's Cube solvers often rely on a facelet
-representation, which stores colors at each position on the cube. This approach, while intuitive, is
-inefficient for advanced solving algorithms. Instead, a cubie-level representation is used, where the cube's
-state is described in terms of the position and orientation of its 8 corner pieces and 12 edge pieces. This
-method allows for a more efficient representation of moves and enables quicker lookup operations. The state of
-a cubie-level representation can be stored as two separate permutations: one for edges and another
-for corners. Additionally, each piece's orientation is stored separately. This reduces memory usage
-and speeds up move calculations.
+The first challenge was representing the Rubik's Cube. Traditional Rubik's Cube solvers often rely on a facelet 
+representation, which stores colors at each position on the cube. This approach, while intuitive, is 
+inefficient for advanced solving algorithms. Instead, a *is replaced by* representation is used, which encodes 
+the cube's state in two lists. The first list stores the corners along with their orientation. Likewise, 
+the second list stores the edges and their orientation. Each move is a permutation of these lists. This 
+representation enables efficient  move application and state transitions, making it ideal for fast 
+search algorithms like IDA*.
+
 
 ## Kociemba's Algorithm Implementation
 ### Phase 1: Reducing the Cube to Subgroup G1
@@ -55,14 +51,13 @@ This means ensuring that:
 - The cube reaches a reduced subset where only a subset of allowed moves is required for solving.
 - This phase utilizes precomputed lookup tables to guide moves efficiently, reducing the number of steps needed to reach G1.
 
-
 ### Phase 2: Solving from G1 to the Solved State
 Once the cube is in the G1 group, a second search is performed to find the shortest solution to reach the solved state.
 This step benefits from additional heuristics and pruning techniques, ensuring that an optimal or near-optimal
 solution is found quickly.
 
 ## Search Strategy and Optimization
-- IDA Algorithm:* Since an exhaustive search is computationally expensive, Kociemba's Algorithm relies on
+- IDA* Algorithm: Since an exhaustive search is computationally expensive, Kociemba's Algorithm relies on
 Iterative Deepening A* (IDA*), an improved variant of A* that uses iterative deepening to limit memory
 consumption while maintaining optimality.
 
@@ -76,5 +71,14 @@ more effectively.
 # Results
 
 # Conclusions
+The A* algorithm is very efficient for problems where a fixed graph is available and does not change over time. However, when
+applying it to solving the Rubik's Cube, challenges arose due to the vast number of possible states the cube can take. To tackle
+this issue, optimizations were necessary to reduce the search space and improve the algorithm's performance.
+
+One of the key factors in achieving this was the way the cube was represented, as an efficient representation made it easier to
+apply the Kociemba algorithm. The latter allowed for finding optimal solutions in fewer moves by leveraging a more effective
+heuristic search. Thanks to these optimizations, the project’s objectives were successfully met, demonstrating that the
+combination of a well-structured problem representation and advanced search strategies can make algorithms like A* viable even for
+problems with large search spaces.
 
 # Bibliography
