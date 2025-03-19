@@ -67,11 +67,6 @@ more effectively.
 # Conclusions
 
 # Bibliography
----
-bibliography:
-- 'fuentes.bib'
----
-
 
 
 
