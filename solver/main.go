@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 )
 
 type CubePos [6]uint64
@@ -27,8 +28,18 @@ const (
 	Bx1
 	Bx2
 	Bx3
-	Invalid
+	InvalidFullMove
 )
+
+// 5
+// 2
+// 3
+// 11
+// 5
+// 2
+// 3
+// 11
+// 14
 
 type Move uint8
 
@@ -179,6 +190,19 @@ type Perm struct {
 	edges [12]EdgeCubie
 }
 
+type QueueElement struct {
+	p          Perm
+	parentMove FullMove
+	level      uint8
+}
+
+var prune1 = make([]uint, 0)
+var prune2 = make([]uint, 0)
+var prune3 = make([]uint, 0)
+var phase2ForbiddenMoves = []FullMove{Rx1, Rx3, Lx1, Lx3, Fx1, Fx3, Bx1, Bx3}
+
+var maxLength = 40
+
 func makeMove(p Perm, m Move) Perm {
 	var prod Perm
 
@@ -278,7 +302,7 @@ func indexEdgeOri(p Perm) uint16 {
 	return s
 }
 
-func indexPermCord(p Perm) int {
+func indexCornPerm(p Perm) int {
 	t := 0
 	for i := DRB; i > URF; i-- {
 		s := 0
@@ -295,7 +319,7 @@ func indexPermCord(p Perm) int {
 	return t
 }
 
-func indexEdgeCord(p Perm) int {
+func indexEdgePerm(p Perm) int {
 	t := 0
 	for i := BR; i > UR; i-- {
 		s := 0
@@ -312,22 +336,147 @@ func indexEdgeCord(p Perm) int {
 	return t
 }
 
-func generatePruningList() map[uint16]uint8 {
+func genPrune1() []uint {
 	var count uint16 = 0
-	// var p Perm = Perm{corns: cornerCubieMoves[InvalidMove], edges: edgeCubieMoves[InvalidMove]}
-
-
-	for count < 2186 {
-
-		count++
+	var root Perm = Perm{
+		corns: cornerCubieMoves[InvalidMove],
+		edges: edgeCubieMoves[InvalidMove],
 	}
-	return make(map[uint16]uint8)
+	var q = make([]QueueElement, 0)
+	var pruneTable = make([]uint, 2187)
+
+	q = append(q, QueueElement{p: root, parentMove: InvalidFullMove, level: 0})
+
+	for count < 2186 && len(q) > 0 {
+		curr := q[0]
+		p := curr.p
+		pHash := indexCornOri(p)
+		if pruneTable[pHash] == 0 && pHash != 0 {
+			count++
+			pruneTable[pHash] = uint(curr.level)
+			fmt.Printf("%v\t%v\n", pHash, curr.level)
+		}
+		q = q[1:]
+
+		for newMove := range Bx3 + 1 {
+			if curr.parentMove/3 == newMove/3 {
+				continue
+			}
+			p = makeFullMove(p, newMove)
+			q = append(q, QueueElement{p: p, parentMove: newMove, level: curr.level + 1})
+		}
+	}
+
+	return pruneTable
+}
+
+func genPrune2() []uint {
+	var count uint16 = 0
+	var root Perm = Perm{
+		corns: cornerCubieMoves[InvalidMove],
+		edges: edgeCubieMoves[InvalidMove],
+	}
+	var q = make([]QueueElement, 0)
+	var pruneTable = make([]uint, 2048)
+
+	q = append(q, QueueElement{p: root, parentMove: InvalidFullMove, level: 0})
+
+	for count < 1799 && len(q) > 0 {
+		curr := q[0]
+		p := curr.p
+		pHash := indexEdgeOri(p)
+		if pruneTable[pHash] == 0 && pHash != 0 {
+			count++
+			pruneTable[pHash] = uint(curr.level)
+		}
+		q = q[1:]
+
+		for newMove := range Bx3 + 1 {
+			if curr.parentMove/3 == newMove/3 {
+				continue
+			}
+			p = makeFullMove(p, newMove)
+			q = append(q, QueueElement{p: p, parentMove: newMove, level: curr.level + 1})
+		}
+	}
+
+	return pruneTable
+}
+
+func genPrune3() []uint {
+	var count uint16 = 0
+	var root Perm = Perm{
+		corns: cornerCubieMoves[InvalidMove],
+		edges: edgeCubieMoves[InvalidMove],
+	}
+	var q = make([]QueueElement, 0)
+	var pruneTable = make([]uint, 40320)
+
+	q = append(q, QueueElement{p: root, parentMove: InvalidFullMove, level: 0})
+
+	for count < 40319 && len(q) > 0 {
+		curr := q[0]
+		p := curr.p
+		pHash := indexCornPerm(p)
+		if pruneTable[pHash] == 0 && pHash != 0 {
+			count++
+			// fmt.Println(count)
+			pruneTable[pHash] = uint(curr.level)
+		}
+		q = q[1:]
+
+		// for _, newMove := range []FullMove{Ux1, Dx1, Rx2, Lx2, Fx2, Bx2} {
+		for newMove := range Bx3 + 1 {
+			if curr.parentMove/3 == newMove/3 {
+				continue
+			}
+			p = makeFullMove(p, newMove)
+			q = append(q, QueueElement{p: p, parentMove: newMove, level: curr.level + 1})
+		}
+	}
+
+	return pruneTable
+}
+
+func genPrune4() []uint {
+	var count uint = 0
+	var root Perm = Perm{
+		corns: cornerCubieMoves[InvalidMove],
+		edges: edgeCubieMoves[InvalidMove],
+	}
+	var q = make([]QueueElement, 0)
+	var pruneTable = make([]uint, 479_001_600)
+
+	q = append(q, QueueElement{p: root, parentMove: InvalidFullMove, level: 0})
+
+	for count < 479_001_599 && len(q) > 0 {
+		curr := q[0]
+		p := curr.p
+		pHash := indexEdgePerm(p)
+		if pruneTable[pHash] == 0 && pHash != 0 {
+			count++
+			pruneTable[pHash] = uint(curr.level)
+			fmt.Printf("%v\t%v\n", pHash, curr.level)
+		}
+		q = q[1:]
+
+		// for _, newMove := range []FullMove{Ux1, Dx1, Rx2, Lx2, Fx2, Bx2} {
+		for newMove := range Bx3 + 1 {
+			if curr.parentMove/3 == newMove/3 {
+				continue
+			}
+			p = makeFullMove(p, newMove)
+			q = append(q, QueueElement{p: p, parentMove: newMove, level: curr.level + 1})
+		}
+	}
+
+	return pruneTable
 }
 
 func kociemba(p Perm) {
-	for d := range 128 {
-		res := phase1search(p, uint64(d+1), Invalid)
-		fmt.Println(res)
+	for d := range maxLength + 1 {
+		res := phase1search(p, uint(d+1), InvalidFullMove)
+		// fmt.Println(res)
 		if res {
 			fmt.Println("FINAL DEPTH", d)
 			return
@@ -335,14 +484,15 @@ func kociemba(p Perm) {
 	}
 }
 
-func phase1search(p Perm, depth uint64, lastMove FullMove) bool {
-	if solved(p) {
-		fmt.Println("YEEEEEEEA")
-		return true
-	}
-	if depth > 0 {
+func phase1search(p Perm, depth uint, lastMove FullMove) bool {
+	if depth == 0 && phase1GoalReached(p) && slices.Index(phase2ForbiddenMoves, lastMove) != 0 {
+		return phase2start(p, depth)
+	} else if depth > 0 {
 		for move := range Bx3 + 1 {
-			if move == lastMove {
+			pHash := indexCornOri(p)
+			pHash2 := indexEdgeOri(p)
+			if max(prune1[pHash], prune2[pHash2]) > depth || move/3 == lastMove/3 {
+				// if  move/3 == lastMove/3 {
 				continue
 			}
 			newP := p
@@ -357,20 +507,31 @@ func phase1search(p Perm, depth uint64, lastMove FullMove) bool {
 	return false
 }
 
-func phase2start(p Perm, currDepth int) {
-	for d := range 128 - currDepth {
-		phase2search(p, uint64(d), Invalid)
+func phase2start(p Perm, currDepth uint) bool {
+	for d := range min(uint(maxLength)-currDepth, 11) {
+		res := phase2search(p, d, InvalidFullMove)
+		// fmt.Println("phase 2", res, currDepth)
+		maxLength = int(currDepth) - 1
+		if res {
+			return true
+		}
 	}
+	return false
 }
 
-func phase2search(p Perm, depth uint64, lastMove FullMove) bool {
-	if solved(p) {
+func phase2search(p Perm, depth uint, lastMove FullMove) bool {
+	if isSolved(p) {
 		fmt.Println("YEEEEEEEA")
 		return true
 	}
 	if depth > 0 {
 		for move := range Bx3 + 1 {
-			if move == lastMove {
+			pHash := indexCornPerm(p)
+			if slices.Index(phase2ForbiddenMoves, move) != 0 || prune3[pHash] > depth || move/3 == lastMove/3 {
+				// if move/3 == lastMove/3 {
+				// if prune2[pHash] > depth {
+				// 	fmt.Println("LOL")
+				// }
 				continue
 			}
 			newP := p
@@ -385,8 +546,16 @@ func phase2search(p Perm, depth uint64, lastMove FullMove) bool {
 	return false
 }
 
-func solved(p Perm) bool {
-	return indexCornOri(p) == 0 && indexPermCord(p) == 0
+func phase1GoalReached(p Perm) bool {
+	return indexCornOri(p) == 0 &&
+		indexEdgeOri(p) == 0
+}
+
+func isSolved(p Perm) bool {
+	return indexCornOri(p) == 0 &&
+		indexCornPerm(p) == 0 &&
+		indexEdgePerm(p) == 0 &&
+		indexEdgeOri(p) == 0
 }
 
 func main() {
@@ -400,21 +569,51 @@ func main() {
 	// fmt.Println(indexCornOri(p), indexPermCord(p))
 	// fmt.Println(p.corns, p.edges)
 	// // R U R' U'
+
+	p = makeFullMove(p, Rx3)
+
+	// p = makeFullMove(p, Rx1)
+	// p = makeFullMove(p, Ux1)
+	// p = makeFullMove(p, Rx3)
+	// p = makeFullMove(p, Ux3)
 	//
-	p = makeFullMove(p, Rx1)
-	p = makeFullMove(p, Rx1)
-	p = makeFullMove(p, Rx1)
-	fmt.Println(p.corns, p.edges)
-
 	// p = makeFullMove(p, Rx1)
 	// p = makeFullMove(p, Ux1)
 	// p = makeFullMove(p, Rx3)
 	// p = makeFullMove(p, Ux3)
 
+	// R U R' D R U R' D L F R B R' D L F' R U R' D
+	p = makeFullMove(p, Rx1)
+	p = makeFullMove(p, Ux1)
+	p = makeFullMove(p, Rx3)
+	p = makeFullMove(p, Dx1)
+	p = makeFullMove(p, Rx1)
+	p = makeFullMove(p, Ux1)
+	p = makeFullMove(p, Rx3)
+	p = makeFullMove(p, Dx1)
+	p = makeFullMove(p, Lx1)
+	p = makeFullMove(p, Fx1)
+	p = makeFullMove(p, Rx1)
+	// p = makeFullMove(p, Bx1)
+	// p = makeFullMove(p, Rx3)
+	// p = makeFullMove(p, Dx1)
+	// p = makeFullMove(p, Lx1)
+	// p = makeFullMove(p, Fx3)
 	// p = makeFullMove(p, Rx1)
 	// p = makeFullMove(p, Ux1)
 	// p = makeFullMove(p, Rx3)
-	// p = makeFullMove(p, Ux3)
+	// p = makeFullMove(p, Dx1)
 
+	// prune1 = genPrune1()
+	// prune2 = genPrune2()
+	// prune3 = genPrune3()
+	// genPrune1()
+	genPrune4()
+
+	// for i, v := range genPrune1() {
+	// 	fmt.Printf("%v\t%v\n", i, v)
+	// }
+
+	fmt.Println("HOLA")
 	// kociemba(p)
 }
